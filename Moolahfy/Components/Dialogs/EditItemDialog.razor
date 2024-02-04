@@ -1,0 +1,113 @@
+﻿@inject DataService dataService;
+@inject ISnackbar Snackbar
+
+@if (Visible)
+{
+    <MudOverlay Visible="true" DarkBackground="true" AutoClose="false" Style="padding-left: 0; padding-right: 0; justify-content: center; outline: #9C27B0 solid 1px;">
+        <MudCard Style="width:100%; margin: 0;">
+            <MudCardContent>
+                <MudTextField Label="Name" HelperText="Name of the expense item" @bind-Text="@item.Name" T="string" Variant="Variant.Outlined" />
+                <br />
+                <MudTextField Label="Description" HelperText="Optional" @bind-Text="@item.Description" T="string" Variant="Variant.Outlined" />
+                <br />
+                <MudDatePicker Label="Initial Due Date" @bind-Date="@_selectedDate" Variant="Variant.Outlined"/>
+                <br />
+                <MudNumericField @bind-Value="@item.Amount" Label="Expense Amount" Min="0" Variant="Variant.Outlined" />
+                <br />
+                <MudSelect T="Periods" Label="Repeats" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" MultiSelection="false" @bind-Value="@item.Period">
+                    <MudSelectItem T="Periods" Value="Periods.None">Never</MudSelectItem>
+                    <MudSelectItem T="Periods" Value="Periods.Monthly">Monthly</MudSelectItem>
+                    <MudSelectItem T="Periods" Value="Periods.Quarterly">Quarterly</MudSelectItem>
+                    <MudSelectItem T="Periods" Value="Periods.Yearly">Yearly</MudSelectItem>
+                </MudSelect>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButtonGroup OverrideStyles="false" Style="width:100%;">
+                    <MudButton ButtonType="ButtonType.Button" Variant="Variant.Outlined" Color="Color.Secondary" Style="width:45%;" Class="ml-auto" OnClick="@OnClose">Close</MudButton>
+                    <MudSpacer />
+                    <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" Style="width:45%;" Class="ml-auto" OnClick="@OnSave">Save</MudButton>
+                </MudButtonGroup>
+
+            </MudCardActions>
+        </MudCard>
+    </MudOverlay>
+}
+
+@code {
+    [Parameter]
+    public Item item { get; set; } = new();
+
+    [Parameter]
+    public EventCallback OnClosed { get; set; }
+
+    [Parameter]
+    public EventCallback OnDeleted { get; set; }
+
+    bool Visible = true;
+
+    DateTime? _selectedDate;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _selectedDate = item.Date;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnClose()
+    {
+        await OnDeleted.InvokeAsync();
+    }
+
+    private async Task OnSave()
+    {
+        if (string.IsNullOrWhiteSpace(item.Name))
+        {
+            Snackbar.Add("You must enter a name for the expense", Severity.Warning);
+            return;
+        }
+        if (item.Amount <= 0)
+        {
+            Snackbar.Add("You must enter an expense amount", Severity.Warning);
+            return;
+        }
+        if (!_selectedDate.HasValue)
+        {
+            Snackbar.Add("You must enter a date", Severity.Warning);
+            return;
+        }
+
+        item.Date = _selectedDate.Value;
+        item.DayOfMonth = item.Date.Day;
+
+        var _original = dataService.Instance.BaseBudgetItems.SingleOrDefault(a => a.id == item.BaseID);
+
+        if (_original is not null)
+        {
+            _original.Name = item.Name;
+            _original.Date = item.Date;
+            _original.Amount = item.Amount;
+            _original.DayOfMonth = item.DayOfMonth;
+            _original.Description = item.Description;
+            _original.Period = item.Period;
+        }
+
+        //var workers = dataService.Instance.WorkingItems.Where(a => a.BaseID == item.BaseID && a.Date.Month >= item.Date.Month && a.Date.Year >= item.Date.Year && !a.IsCompleted).ToList();
+        foreach (var w in dataService.Instance.WorkingItems)
+        {
+            if (w.BaseID == item.BaseID && w.Date.Month >= item.Date.Month && w.Date.Year >= item.Date.Year && !w.IsCompleted)
+            {
+                w.Name = item.Name;
+                
+                w.Amount = item.Amount;
+                w.DayOfMonth = item.DayOfMonth;
+                w.Description = item.Description;
+                w.Period = item.Period;
+            }
+            
+        }
+
+        dataService.SaveData();
+        Snackbar.Add("Expense Saved Successfully", Severity.Success);
+        await OnClosed.InvokeAsync();
+    }
+}

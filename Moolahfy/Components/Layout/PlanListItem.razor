@@ -1,0 +1,97 @@
+﻿@inject DataService dataService;
+
+@if (userDeleted)
+{
+    <MudContainer>
+        <MudText>Item Removed :)</MudText>
+    </MudContainer>
+}
+else
+{
+    if (!isLoading)
+    {
+        <MudPaper Class="pa-4" @onclick="@OnTapDetected" Style="outline: #9C27B0 solid 2px;">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
+                <MudAvatar Size="Size.Large" Color="Color.Primary" Variant="Variant.Outlined">@item.Name[0]</MudAvatar>
+                    <MudStack Justify="Justify.Center" Spacing="0">
+                        <MudText Typo="Typo.body1">@item.Name</MudText>
+                        <MudText Typo="Typo.body2">Due on the @(item.Date.Day + GetDaySuffix(item.Date.Day)) @item.Period.ToString()</MudText>
+                    </MudStack>
+                    <MudSpacer></MudSpacer>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="OnEdit" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Secondary" OnClick="OnDeleted" />
+                </MudStack>
+            </MudPaper>
+    }
+    
+}
+
+
+@code {
+    [Parameter]
+    public Item item { get; set; }
+
+    [Parameter]
+    public EventCallback OnEditClicked { get; set; }
+
+    [Parameter]
+    public EventCallback OnItemDeleted { get; set; }
+
+    [Parameter]
+    public EventCallback OnTapped { get; set; }
+
+    bool isLoading = true;
+    bool userDeleted = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = false;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    string GetDaySuffix(int day)
+    {
+        switch (day)
+        {
+            case 1:
+            case 21:
+            case 31:
+                return "st";
+            case 2:
+            case 22:
+                return "nd";
+            case 3:
+            case 23:
+                return "rd";
+            default:
+                return "th";
+        }
+    }
+
+    private async Task OnDeleted()
+    {
+        if (isLoading)
+        {
+            return;
+        }
+
+        //dataService.DeleteItem(item.id);
+        await OnItemDeleted.InvokeAsync();
+    }
+
+    private async Task OnEdit()
+    {
+        if (isLoading)
+        {
+            return;
+        }
+
+        await OnEditClicked.InvokeAsync();
+    }
+
+    private async Task OnTapDetected()
+    {
+        await OnTapped.InvokeAsync();
+    }
+}

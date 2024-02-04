@@ -1,0 +1,86 @@
+﻿@page "/view/{id}"
+
+@inject DataService dataService;
+@inject ISnackbar Snackbar
+@inject NavigationManager navigationManager
+
+@if (isConfirmDeleteOpened)
+{
+    <ConfirmActionDialog OnCancelled="OnCancelledDelete" OnAccepted="OnAcceptedDeleted" Prompt="Are you sure you want to remove this expense?" />
+}
+
+<MudContainer>
+    <MudTextField ReadOnly="true" Label="Name" HelperText="Name of the expense item" Text="@item.Name" T="string" Variant="Variant.Outlined" />
+    <br />
+    <MudTextField ReadOnly="true" Label="Description" HelperText="Optional" Text="@item.Description" T="string" Variant="Variant.Outlined" />
+    <br />
+    <MudDatePicker ReadOnly="true" Label="Due Date" Date="@_selectedDate" Variant="Variant.Outlined" />
+    <br />
+    <MudNumericField ReadOnly="true" Value="@item.Amount" Label="Expense Amount" Min="0" Variant="Variant.Outlined" />
+    <br />
+    <MudSelect ReadOnly="true" T="Periods" Label="Repeats" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" MultiSelection="false" Value="@item.Period">
+        <MudSelectItem T="Periods" Value="Periods.None">Never</MudSelectItem>
+        <MudSelectItem T="Periods" Value="Periods.Monthly">Monthly</MudSelectItem>
+        <MudSelectItem T="Periods" Value="Periods.Quarterly">Quarterly</MudSelectItem>
+        <MudSelectItem T="Periods" Value="Periods.Yearly">Yearly</MudSelectItem>
+    </MudSelect>
+
+    <br />
+    <br />
+
+    <MudButtonGroup OverrideStyles="false" Style="width:100%;">
+        @if (item.Period == Periods.None)
+        {
+            <MudButton ButtonType="ButtonType.Button" Variant="Variant.Outlined" Color="Color.Error" Style="width:45%;" Class="ml-auto" OnClick="@OnDelete">Delete</MudButton>
+            <MudSpacer />
+        }
+        <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto" OnClick="@(() => navigationManager.NavigateTo("/"))">Close</MudButton>
+    </MudButtonGroup>
+</MudContainer>
+
+@code {
+    [Parameter]
+    public string id { get; set; }
+
+    Item item = new();
+    DateTime? _selectedDate;
+
+    bool isLoading = true;
+    bool isConfirmDeleteOpened = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var i = int.Parse(id);
+        dataService.UpdateTitle.Invoke("View Expense");
+        dataService.showArrows = false;
+
+        item = dataService.Instance.WorkingItems.SingleOrDefault(a => a.id == i);
+        _selectedDate = item.Date;
+
+        isLoading = false;
+    }
+
+    private async void OnDelete()
+    {
+        isConfirmDeleteOpened = true;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnCancelledDelete()
+    {
+        isConfirmDeleteOpened = false;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnAcceptedDeleted()
+    {
+        isConfirmDeleteOpened = false;
+        dataService.DeleteWorkingItem(item.id);
+        dataService.RegenerateMonth(item.Date.Month, item.Date.Year);
+
+        Snackbar.Add("Expense Deleted Successfully", Severity.Success);
+        navigationManager.NavigateTo("/");
+    }
+}

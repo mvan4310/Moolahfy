@@ -1,0 +1,40 @@
+﻿<MudOverlay Visible="true" DarkBackground="true" AutoClose="false">
+    <MudCard>
+        <MudCardContent>
+            <MudText Align="Align.Center" Typo="Typo.h5">@Prompt</MudText>
+        </MudCardContent>
+        <MudCardActions>
+            <MudButtonGroup OverrideStyles="false" Style="width:100%;">
+                    <MudButton ButtonType="ButtonType.Button" Variant="Variant.Outlined" Color="Color.Secondary" Style="width:45%;" Class="ml-auto" OnClick="@OnCancel">Cancel</MudButton>
+                <MudSpacer />
+                    <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" Style="width:45%;" Class="ml-auto" OnClick="@OnAccept">Confirm</MudButton>
+            </MudButtonGroup>
+
+        </MudCardActions>
+    </MudCard>
+</MudOverlay>
+
+@code {
+    [Parameter]
+    public string Prompt { get; set; }
+
+    [Parameter]
+    public EventCallback OnAccepted { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancelled { get; set; }
+
+    bool Visible = true;
+
+
+    private async void OnCancel()
+    {
+        await OnCancelled.InvokeAsync();
+    }
+
+    private async Task OnAccept()
+    {
+
+        await OnAccepted.InvokeAsync();
+    }
+}

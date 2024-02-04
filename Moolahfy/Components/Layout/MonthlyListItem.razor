@@ -1,0 +1,139 @@
+﻿@inject DataService dataService;
+
+<MudPaper Class="pa-4" @onclick="@OnTapDetected" Elevation="3" Style="@cardColor" >
+    <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center">
+        <MudAvatar Size="Size.Large" Color="Color.Primary" Variant="Variant.Outlined">@item.Name[0]</MudAvatar>
+        <MudStack Justify="Justify.Center" Spacing="0">
+                <MudText Typo="Typo.h5">@item.Name</MudText>
+            <MudText Typo="Typo.body1">Due on the @(item.Date.Day + GetDaySuffix(item.Date.Day))</MudText>
+        </MudStack>
+                    
+        <MudSpacer />
+            <MudStack Justify="Justify.Center" Spacing="0">
+                <MudCheckBox Value="@item.IsCompleted" ValueChanged="OnCompletedChanged" T="bool" Color="Color.Primary" Size="Size.Large"></MudCheckBox>
+                <MudText Typo="Typo.h5">@item.Amount.ToString("C")</MudText>
+            </MudStack>
+            
+    </MudStack>
+</MudPaper>
+
+    @code {
+    [Parameter]
+    public Item item { get; set; }
+
+    [Parameter]
+    public EventCallback OnTapped { get; set; }
+
+    bool isLoading = true;
+
+    string cardColor = "outline: #9C27B0 solid 2px; background-color: #212121";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        isLoading = false;
+
+        if (item.IsCompleted)
+        {
+            if (dataService.Instance.EnableDarkMode)
+            {
+                cardColor = "outline: #9C27B0 solid 2px; background-color: " + Colors.Blue.Darken4;
+            }
+            else
+            {
+                cardColor = "outline: #9C27B0 solid 2px; background-color: " + Colors.Purple.Lighten5;
+            }
+
+        }
+        else
+        {
+            if (dataService.Instance.EnableDarkMode)
+            {
+                cardColor = "outline: #9C27B0 solid 2px; background-color: #212121";
+            }
+            else
+            {
+                cardColor = "outline: #9C27B0 solid 2px; background-color: white";
+            }
+
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    string GetDaySuffix(int day)
+    {
+        switch (day)
+        {
+            case 1:
+            case 21:
+            case 31:
+                return "st";
+            case 2:
+            case 22:
+                return "nd";
+            case 3:
+            case 23:
+                return "rd";
+            default:
+                return "th";
+        }
+    }
+
+    private void OnCompletedChanged(bool value)
+    {
+        if (isLoading)
+        {
+            return;  
+        }
+
+        if (value)
+        {
+            item.IsCompleted = true;
+            item.DateCompleted = DateTime.Now;
+            dataService.SaveData();
+        }
+        else
+        {
+            item.IsCompleted = false;
+            item.DateCompleted = DateTime.MinValue;
+            dataService.SaveData();
+        }
+
+        UpdateCard();
+
+        //await InvokeAsync(StateHasChanged);
+        StateHasChanged();
+    }
+
+    private void UpdateCard()
+    {
+        if (item.IsCompleted)
+        {
+            if (dataService.Instance.EnableDarkMode)
+            {
+                cardColor = "outline: #9C27B0 solid 2px; background-color: " + Colors.Blue.Darken4;
+            }
+            else
+            {
+                cardColor = "outline: #9C27B0 solid 2px; background-color: " + Colors.Purple.Lighten5;
+            }
+
+        }
+        else
+        {
+            if (dataService.Instance.EnableDarkMode)
+            {
+                cardColor = "outline: #9C27B0 solid 2px; background-color: #212121";
+            }
+            else
+            {
+                cardColor = "outline: #9C27B0 solid 2px; background-color: white";
+            }
+        }
+    }
+
+    private async Task OnTapDetected()
+    {
+        await OnTapped.InvokeAsync();
+    }
+}

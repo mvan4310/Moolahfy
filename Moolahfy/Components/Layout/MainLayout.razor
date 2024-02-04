@@ -1,0 +1,179 @@
+﻿@using Microsoft.Maui.Graphics.Platform
+@inherits LayoutComponentBase
+@inject IDialogService dialogService
+@inject DataService dataService
+@inject NavigationManager navigationManager
+
+<MudThemeProvider @ref="@mudThemeProvider" Theme="GetLightTheme()" @bind-IsDarkMode="@dataService.Instance.EnableDarkMode" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+    <div class="page">
+        <MudLayout Style="height:100%;">
+            @if (dataService.Instance.HasOnboarded)
+        {
+            <MudAppBar Class="navbar sticky-top" Style="background-color:#9C27B0; color: white;position: relative; list-style: none; overscroll-behavior-y: contain; margin: 0;">
+
+                @if (dataService.showArrows)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Settings" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(() => navigationManager.NavigateTo("/plan"))" />
+                }
+                else
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.Home" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(() => navigationManager.NavigateTo("/"))" />
+                }
+
+                <MudSpacer />
+                @if (dataService.showArrows)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" Color="Color.Inherit" OnClick="OnChangeMonthDown" />
+                }
+
+                <MudText Color="Color.Inherit">@dataService.Title</MudText>
+
+                    @if (dataService.showArrows)
+                {
+                    <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" Color="Color.Inherit" OnClick="OnChangeMonthUp" />
+                }
+
+                <MudSpacer />
+                <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Inherit" OnClick="@(() => navigationManager.NavigateTo("/add"))" />
+            </MudAppBar>
+        }
+        
+            <MudMainContent Class="pt-16">
+                <MudContainer>
+                    @Body
+                </MudContainer>
+            </MudMainContent>
+        </MudLayout>
+    </div>
+
+@code {
+    bool open = false;
+    bool showAddMenu = false;
+    bool showOnboarding = false;
+    string img = "";
+    MudTheme selectedTheme = GetLightTheme();
+    MudThemeProvider mudThemeProvider;
+
+    static Palette palette = new Palette()
+        {
+            Primary = Colors.Blue.Default,
+            Secondary = Colors.Orange.Default,
+            AppbarBackground = Colors.Purple.Default,
+        };
+    static Palette darkPalette = new Palette()
+        {
+            Primary = Colors.Blue.Lighten3,
+            Secondary = Colors.Orange.Lighten3,
+            AppbarBackground = Colors.Purple.Lighten3,
+            Background = Colors.BlueGrey.Darken4,
+            TextPrimary = Colors.Shades.White
+        };
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        bool dataLoaded = await dataService.LoadData();
+        if (dataLoaded)
+        {
+            if (dataService.Instance.LastUpdated == DateTime.MinValue.ToShortDateString())
+            {
+                dataService.Instance.LastUpdated = DateTime.Now.ToShortDateString();
+                dataService.SaveData();
+            }
+        }
+
+        dataService.UpdateTitle = OnTitleChanged;
+
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                var _theme = await mudThemeProvider.GetSystemPreference();
+
+                if (_theme)
+                {
+                    dataService.Instance.EnableDarkMode = true;
+                }
+                else
+                {
+                    dataService.Instance.EnableDarkMode = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                dataService.Instance.EnableDarkMode = false;
+            }
+            dataService.OnFinishedLoading.Invoke();
+            StateHasChanged();
+        }
+    }
+
+    void ToggleDrawer()
+    {
+        open = !open;
+        StateHasChanged();
+    }
+
+    public void OnSwipe(SwipeEventArgs direction)
+    {
+        if (direction.SwipeDirection == SwipeDirection.LeftToRight && !open)
+        {
+            open = true;
+            StateHasChanged();
+        }
+        else if (direction.SwipeDirection == SwipeDirection.RightToLeft && open)
+        {
+            open = false;
+            StateHasChanged();
+        }
+    }
+
+    private void OnTitleChanged(string title)
+    {
+        dataService.Title = title;
+        StateHasChanged();
+    }
+
+    private void OnChangeMonthDown()
+    {
+        var n = dataService.CurrentMonth.AddMonths(-1);
+
+        dataService.RegenerateMonth(n.Month, n.Year);
+
+        dataService.UpdateMonthSelected.Invoke(n);
+    }
+
+    private void OnChangeMonthUp()
+    {
+        var n = dataService.CurrentMonth.AddMonths(1);
+
+        dataService.RegenerateMonth(n.Month, n.Year);
+        dataService.UpdateMonthSelected.Invoke(n);
+    }
+
+    public static MudTheme GetLightTheme()
+    {
+        
+        return new MudTheme()
+            {
+                Palette = palette,
+            };
+    }
+
+    public static MudTheme GetDarkTheme()
+    {
+
+        return new MudTheme()
+            {
+                Palette = darkPalette,
+            };
+    }
+}

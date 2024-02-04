@@ -1,0 +1,101 @@
+﻿@page "/add"
+
+@inject DataService dataService;
+@inject ISnackbar Snackbar
+@inject NavigationManager navigationManager
+
+<MudContainer>
+    <MudTextField Label="Name" HelperText="Name of the expense item" @bind-Value="@item.Name" Variant="Variant.Outlined" />
+    <br />
+    <MudTextField Label="Description" HelperText="Optional" @bind-Value="@item.Description" Variant="Variant.Outlined" />
+    <br />
+    <MudDatePicker Label="When is this due?" @bind-Date="@_selectedDate" Variant="Variant.Outlined" />
+    <br />
+    <MudNumericField @bind-Value="@item.Amount" Label="Expense Amount" Min="0" Variant="Variant.Outlined" />
+    <br />
+    <MudSelect T="Periods" Label="Repeats" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" MultiSelection="false" @bind-Value="@item.Period">
+        <MudSelectItem T="Periods" Value="Periods.None">Never</MudSelectItem>
+        <MudSelectItem T="Periods" Value="Periods.Monthly">Monthly</MudSelectItem>
+        <MudSelectItem T="Periods" Value="Periods.Quarterly">Quarterly</MudSelectItem>
+        <MudSelectItem T="Periods" Value="Periods.Yearly">Yearly</MudSelectItem>
+    </MudSelect>
+
+    <br />
+    <br />
+
+    <MudButtonGroup OverrideStyles="false" Style="width:100%;">
+        <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Secondary"  Class="ml-auto" OnClick="@(() => navigationManager.NavigateTo("/"))">Cancel</MudButton>
+        <MudSpacer />
+        <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary"  Class="ml-auto" OnClick="@OnAdd">Add</MudButton>
+    </MudButtonGroup>
+</MudContainer>
+
+@code {
+    Item item = new();
+    DateTime? _selectedDate;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        dataService.UpdateTitle.Invoke("Add Expense");
+        dataService.showArrows = false;
+    }
+
+    private async void OnAdd()
+    {
+        if (string.IsNullOrWhiteSpace(item.Name))
+        {
+            Snackbar.Add("You must enter a name for the expense", Severity.Warning);
+            return;
+        }
+        if (item.Amount <= 0)
+        {
+            Snackbar.Add("You must enter an expense amount", Severity.Warning);
+            return;
+        }
+        if (!_selectedDate.HasValue)
+        {
+            Snackbar.Add("You must enter a date", Severity.Warning);
+            return;
+        }
+
+        item.Date = _selectedDate.Value;
+        item.DayOfMonth = item.Date.Day;
+        item.id = dataService.Instance.BaseBudgetItems.Select(a => a.id).DefaultIfEmpty(0).Max() + 1;
+        item.BaseID = item.id;
+
+        if (item.Period == Periods.None)
+        {
+            item.id = dataService.Instance.WorkingItems.Select(a => a.id).DefaultIfEmpty(0).Max() + 1;
+            item.BaseID = 0;
+            dataService.Instance.WorkingItems.Add(item);
+        }
+        else
+        {
+            dataService.Instance.BaseBudgetItems.Add(item);
+
+            Item worker = new Item()
+                {
+                    Amount = item.Amount,
+                    BaseID = item.BaseID,
+                    Date = item.Date,
+                    DayOfMonth = item.DayOfMonth,
+                    Description = item.Description,
+                    Name = item.Name,
+                    Period = item.Period,
+                    id = dataService.Instance.WorkingItems.Select(a => a.id).DefaultIfEmpty(0).Max() + 1
+                };
+
+            dataService.Instance.WorkingItems.Add(worker);
+        }
+
+
+
+
+        dataService.RegenerateMonth(item.Date.Month, item.Date.Year);
+        dataService.SaveData();
+
+        Snackbar.Add("Expense Added Successfully", Severity.Success);
+
+        navigationManager.NavigateTo("/");
+    }
+}

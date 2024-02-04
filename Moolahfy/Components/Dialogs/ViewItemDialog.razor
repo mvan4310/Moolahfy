@@ -1,0 +1,67 @@
+﻿@inject DataService dataService;
+
+@if (Visible)
+{
+    <MudOverlay Visible="true" DarkBackground="true" AutoClose="false" Style="padding-left: 0; padding-right: 0; justify-content: center; outline: #9C27B0 solid 1px;">
+        <MudCard Style="width:100%; margin: 0; outline: #9C27B0 solid 1px;">
+            <MudCardContent>
+                <MudText Align="Align.Center" Typo="Typo.h6">For Viewing Only</MudText>
+                <br />
+                <MudTextField ReadOnly="true" Label="Name" HelperText="Name of the expense item" Text="@item.Name" T="string" Variant="Variant.Outlined" />
+                <br />
+                <MudTextField ReadOnly="true" Label="Description" HelperText="Optional" Text="@item.Description" T="string" Variant="Variant.Outlined" />
+                <br />
+                <MudDatePicker ReadOnly="true" Label="Due Date" Date="@item.Date" Variant="Variant.Outlined" />
+                <br />
+                <MudNumericField ReadOnly="true" Value="@item.Amount" Label="Expense Amount" Min="0" Variant="Variant.Outlined" />
+                <br />
+                <MudSelect ReadOnly="true" T="Periods" Label="Repeats" Variant="Variant.Outlined" AnchorOrigin="Origin.BottomCenter" MultiSelection="false" Value="@item.Period">
+                    <MudSelectItem T="Periods" Value="Periods.None">Never</MudSelectItem>
+                    <MudSelectItem T="Periods" Value="Periods.Monthly">Monthly</MudSelectItem>
+                    <MudSelectItem T="Periods" Value="Periods.Quarterly">Quarterly</MudSelectItem>
+                    <MudSelectItem T="Periods" Value="Periods.Yearly">Yearly</MudSelectItem>
+                </MudSelect>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButtonGroup OverrideStyles="false" Style="width:100%;" >
+                    @if (item.Period == Periods.None)
+                    {
+                        <MudButton ButtonType="ButtonType.Button" Variant="Variant.Outlined" Color="Color.Error" Style="width:45%;" Class="ml-auto" OnClick="@OnDelete">Delete</MudButton>
+                        <MudSpacer />
+                    }
+                    
+                    <MudButton ButtonType="ButtonType.Button" Variant="Variant.Filled" Color="Color.Primary" Style="width:45%;" Class="ml-auto" OnClick="@OnClose">Close</MudButton>
+                </MudButtonGroup>
+
+            </MudCardActions>
+        </MudCard>
+    </MudOverlay>
+}
+
+@code {
+    [Parameter]
+    public Item item { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<Item> OnClosed { get; set; }
+
+    [Parameter]
+    public EventCallback OnDeleted { get; set; }
+
+    bool Visible = true;
+
+
+    private async void OnDelete()
+    {
+        //Visible = false;
+        dataService.DeleteWorkingItem(item.id);
+        dataService.RegenerateMonth(item.Date.Month, item.Date.Year);
+        await OnDeleted.InvokeAsync();
+    }
+
+    private async Task OnClose()
+    {
+        
+        await OnClosed.InvokeAsync(item);
+    }
+}
