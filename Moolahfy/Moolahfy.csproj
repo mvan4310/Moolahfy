@@ -40,22 +40,22 @@
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-ios|AnyCPU'">
       <ApplicationId>com.mvanderpool.moolahfy</ApplicationId>
-      <ApplicationVersion>31</ApplicationVersion>
-      <ApplicationDisplayVersion>1.10.75</ApplicationDisplayVersion>
+      <ApplicationVersion>32</ApplicationVersion>
+      <ApplicationDisplayVersion>1.10.76</ApplicationDisplayVersion>
       <OptimizePNGs>False</OptimizePNGs>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-maccatalyst|AnyCPU'">
       <ApplicationId>com.mvanderpool.moolahfy</ApplicationId>
-      <ApplicationVersion>31</ApplicationVersion>
-      <ApplicationDisplayVersion>1.10.75</ApplicationDisplayVersion>
+      <ApplicationVersion>32</ApplicationVersion>
+      <ApplicationDisplayVersion>1.10.76</ApplicationDisplayVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-android34.0|AnyCPU'">
       <ApplicationId>com.mvanderpool.moolahfy</ApplicationId>
       <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
-      <ApplicationVersion>31</ApplicationVersion>
-      <ApplicationDisplayVersion>1.10.75</ApplicationDisplayVersion>
+      <ApplicationVersion>32</ApplicationVersion>
+      <ApplicationDisplayVersion>1.10.76</ApplicationDisplayVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-windows10.0.19041.0|AnyCPU'">
@@ -64,21 +64,21 @@
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-ios|AnyCPU'">
       <ApplicationId>com.mvanderpool.moolahfy</ApplicationId>
-      <ApplicationVersion>31</ApplicationVersion>
-      <ApplicationDisplayVersion>1.10.75</ApplicationDisplayVersion>
+      <ApplicationVersion>32</ApplicationVersion>
+      <ApplicationDisplayVersion>1.10.76</ApplicationDisplayVersion>
       <OptimizePNGs>False</OptimizePNGs>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-maccatalyst|AnyCPU'">
       <ApplicationId>com.mvanderpool.moolahfy</ApplicationId>
-      <ApplicationVersion>31</ApplicationVersion>
-      <ApplicationDisplayVersion>1.10.75</ApplicationDisplayVersion>
+      <ApplicationVersion>32</ApplicationVersion>
+      <ApplicationDisplayVersion>1.10.76</ApplicationDisplayVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-android34.0|AnyCPU'">
       <ApplicationId>com.mvanderpool.moolahfy</ApplicationId>
-      <ApplicationVersion>31</ApplicationVersion>
-      <ApplicationDisplayVersion>1.10.75</ApplicationDisplayVersion>
+      <ApplicationVersion>32</ApplicationVersion>
+      <ApplicationDisplayVersion>1.10.76</ApplicationDisplayVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-windows10.0.19041.0|AnyCPU'">

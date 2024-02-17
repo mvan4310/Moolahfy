@@ -10,9 +10,9 @@
 
     <div class="page">
         <MudLayout Style="height:100%;">
-            @if (dataService.Instance.HasOnboarded)
+        @if (dataService.Instance.HasOnboarded) //position: relative; list-style: none; overscroll-behavior-y: contain; margin: 0;
         {
-            <MudAppBar Class="navbar sticky-top" Style="background-color:#9C27B0; color: white;position: relative; list-style: none; overscroll-behavior-y: contain; margin: 0;">
+            <MudAppBar Style="background-color:#9C27B0; color: white;">
 
                 @if (dataService.showArrows)
                 {
